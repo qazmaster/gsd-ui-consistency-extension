@@ -1,10 +1,22 @@
 # Contributing
 
+## Prerequisites
+
+- **Node.js** ≥ 20
+- **Python** 3
+- **GSD CLI** installed globally
+
 ## Development Setup
 
 ```bash
-git clone https://github.com/your-org/gsd-ui-consistency-extension.git
+git clone https://github.com/qazmaster/gsd-ui-consistency-extension.git
 cd gsd-ui-consistency-extension
+
+# Install Node dependencies
+npm install
+
+# Type-check the extension
+npx tsc --noEmit
 
 # Test without installing
 gsd -e .

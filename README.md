@@ -10,17 +10,23 @@ A global GSD extension that provides UI/UX consistency tooling — design system
 - **Fix** — Apply automated fixes (simple/medium modes) or generate audit reports (hard mode)
 - **Auto-injection** — Design system context is automatically injected for UI-related tasks
 
+## Prerequisites
+
+- **Node.js** ≥ 20 (required for TypeScript compilation)
+- **Python** 3 (required for running tests)
+- **GSD CLI** installed globally (`npm install -g @gsd/pi` or equivalent)
+
 ## Installation
 
 ```bash
 # From local path (development)
-gsd install ~/.pi/agent/extensions/ui-consistency
+gsd install ~/.gsd/agent/extensions/ui-consistency
 
 # From git (when published)
-gsd install git:github.com/your-org/ui-consistency-extension@v1
+gsd install git:github.com/qazmaster/gsd-ui-consistency-extension@v1
 
 # Try without installing
-gsd -e ~/.pi/agent/extensions/ui-consistency
+gsd -e ~/.gsd/agent/extensions/ui-consistency
 ```
 
 ## Commands
@@ -95,11 +101,20 @@ Optional: Set `uiConsistency.designSystem.base` in `~/.gsd/PREFERENCES.md` for t
 ## Development
 
 ```bash
-# Reload extension after changes
-/reload
+# Install dependencies
+npm install
+
+# Type-check the extension
+npx tsc --noEmit
 
 # Test without installing
-gsd -e ~/.pi/agent/extensions/ui-consistency
+gsd -e .
+
+# Or install locally
+./install.sh
+
+# Reload extension after changes (inside GSD)
+/reload
 ```
 
 ## Tests

@@ -3,10 +3,10 @@ set -euo pipefail
 
 # UI Consistency Extension Installer
 # Usage: ./install.sh [target_dir]
-# Default target: ~/.pi/agent/extensions/ui-consistency
+# Default target: ~/.gsd/agent/extensions/ui-consistency
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TARGET_DIR="${1:-$HOME/.pi/agent/extensions/ui-consistency}"
+TARGET_DIR="${1:-$HOME/.gsd/agent/extensions/ui-consistency}"
 
 echo "Installing UI Consistency Extension..."
 echo "Source: $SCRIPT_DIR"
