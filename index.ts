@@ -6,13 +6,25 @@ import { join } from "node:path";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
+/** Directory where generated design system documents are stored. */
 const DESIGN_SYSTEM_DIR = ".gsd/ui-gates";
+
+/** Path to the STYLE_PICK.md design system document. */
 const STYLE_PICK_PATH = join(DESIGN_SYSTEM_DIR, "STYLE_PICK.md");
+
+/** Path to the DESIGN_DNA.md design system document. */
 const DESIGN_DNA_PATH = join(DESIGN_SYSTEM_DIR, "DESIGN_DNA.md");
+
+/** Path to the COMPONENT_PLAN.md design system document. */
 const COMPONENT_PLAN_PATH = join(DESIGN_SYSTEM_DIR, "COMPONENT_PLAN.md");
 
 // ─── Helper: check if design system exists ──────────────────────────────────
 
+/**
+ * Check whether all three design system documents exist in the workspace.
+ * @param cwd - Workspace root directory.
+ * @returns True when STYLE_PICK.md, DESIGN_DNA.md, and COMPONENT_PLAN.md all exist.
+ */
 function hasDesignSystem(cwd: string): boolean {
   return (
     existsSync(join(cwd, STYLE_PICK_PATH)) &&
@@ -23,6 +35,11 @@ function hasDesignSystem(cwd: string): boolean {
 
 // ─── Helper: read design system content ─────────────────────────────────────
 
+/**
+ * Read the contents of the design system documents.
+ * @param cwd - Workspace root directory.
+ * @returns Object containing the three design system documents, or null if reading fails.
+ */
 function readDesignSystem(cwd: string): { stylePick: string; designDna: string; componentPlan: string } | null {
   try {
     return {
@@ -37,12 +54,18 @@ function readDesignSystem(cwd: string): { stylePick: string; designDna: string; 
 
 // ─── Helper: classify UI files ──────────────────────────────────────────────
 
+/** Classification result for a single UI file. */
 interface FileClassification {
   path: string;
   classification: "modern" | "legacy" | "drift" | "unknown";
   reason: string;
 }
 
+/**
+ * Classify a UI file's source content using heuristic pattern matching.
+ * @param content - File source content.
+ * @returns Classification label and a short reason.
+ */
 function classifyFile(content: string): { classification: FileClassification["classification"]; reason: string } {
   const hasHardcodedColors = /#[0-9a-fA-F]{3,8}\b|rgb\(a?\s*\([^)]*\)/.test(content);
   const hasInlineStyles = /style\s*=\s*\{\{/.test(content);
@@ -66,6 +89,10 @@ function classifyFile(content: string): { classification: FileClassification["cl
 
 // ─── Tool: ui_consistency_scan ──────────────────────────────────────────────
 
+/**
+ * Register the `ui_consistency_scan` tool that classifies UI files in a project.
+ * @param pi - Extension API used to register the tool.
+ */
 function registerScanTool(pi: ExtensionAPI) {
   pi.registerTool({
     name: "ui_consistency_scan",
@@ -167,6 +194,10 @@ function registerScanTool(pi: ExtensionAPI) {
 
 // ─── Tool: ui_consistency_audit ─────────────────────────────────────────────
 
+/**
+ * Register the `ui_consistency_audit` tool that audits UI files against the design system.
+ * @param pi - Extension API used to register the tool.
+ */
 function registerAuditTool(pi: ExtensionAPI) {
   pi.registerTool({
     name: "ui_consistency_audit",
@@ -329,6 +360,11 @@ function registerAuditTool(pi: ExtensionAPI) {
 
 // ─── Tool: ui_consistency_generate_design_system ────────────────────────────
 
+/**
+ * Register the `ui_consistency_generate_design_system` tool that creates STYLE_PICK.md,
+ * DESIGN_DNA.md, and COMPONENT_PLAN.md from codebase analysis.
+ * @param pi - Extension API used to register the tool.
+ */
 function registerGenerateTool(pi: ExtensionAPI) {
   pi.registerTool({
     name: "ui_consistency_generate_design_system",
@@ -495,6 +531,10 @@ Grid-based layout with consistent spacing
 
 // ─── Tool: ui_consistency_fix ───────────────────────────────────────────────
 
+/**
+ * Register the `ui_consistency_fix` tool that applies automatic fixes to UI files.
+ * @param pi - Extension API used to register the tool.
+ */
 function registerFixTool(pi: ExtensionAPI) {
   pi.registerTool({
     name: "ui_consistency_fix",
@@ -580,6 +620,10 @@ function registerFixTool(pi: ExtensionAPI) {
 
 // ─── Command: /ui-consistency ───────────────────────────────────────────────
 
+/**
+ * Register the `/ui-consistency` slash command and its subcommands.
+ * @param pi - Extension API used to register the command.
+ */
 function registerCommand(pi: ExtensionAPI) {
   pi.registerCommand("ui-consistency", {
     description: "UI Consistency workflow: /ui-consistency scan|audit|generate|fix [args]",
@@ -631,6 +675,10 @@ function registerCommand(pi: ExtensionAPI) {
 
 // ─── Hooks ──────────────────────────────────────────────────────────────────
 
+/**
+ * Register event hooks for session start and before-agent-start lifecycle events.
+ * @param pi - Extension API used to register the hooks.
+ */
 function registerHooks(pi: ExtensionAPI) {
   // Session start: check for design system and notify
   pi.on("session_start", async (_event, ctx) => {
@@ -670,6 +718,10 @@ function registerHooks(pi: ExtensionAPI) {
 
 // ─── Tool: ui_consistency_self_test ─────────────────────────────────────────
 
+/**
+ * Register the `ui_consistency_self_test` tool that runs the built-in validation suite.
+ * @param pi - Extension API used to register the tool.
+ */
 function registerSelfTestTool(pi: ExtensionAPI) {
   pi.registerTool({
     name: "ui_consistency_self_test",
@@ -741,6 +793,10 @@ function registerSelfTestTool(pi: ExtensionAPI) {
 
 // ─── Default Export ─────────────────────────────────────────────────────────
 
+/**
+ * Activate the UI Consistency extension by registering all tools, commands, and hooks.
+ * @param pi - Extension API provided by the host runtime.
+ */
 export default function registerExtension(pi: ExtensionAPI) {
   registerScanTool(pi);
   registerAuditTool(pi);
