@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run validation tests
+        run: |
+          cd skills/ui-consistency/tests
+          python3 run_all_tests.py
+
+      - name: Check install script
+        run: |
+          chmod +x install.sh
+          ./install.sh /tmp/test-install
+          test -f /tmp/test-install/package.json
+          test -f /tmp/test-install/extension-manifest.json
+          test -f /tmp/test-install/index.ts
+          test ! -f /tmp/test-install/install.sh

@@ -1,0 +1,21 @@
+{
+  "name": "pi-extension-ui-consistency",
+  "version": "1.0.0",
+  "description": "UI/UX Consistency extension for GSD — design system generation, drift detection, and wave-based remediation",
+  "keywords": ["pi-package", "gsd-extension", "ui-consistency", "design-system"],
+  "type": "module",
+  "pi": {
+    "extensions": ["./index.ts"],
+    "skills": ["./skills"],
+    "prompts": ["./prompts"]
+  },
+  "peerDependencies": {
+    "@gsd/pi-ai": "*",
+    "@gsd/pi-coding-agent": "*",
+    "@gsd/pi-tui": "*",
+    "@sinclair/typebox": "*"
+  },
+  "dependencies": {},
+  "author": "GSD Community",
+  "license": "MIT"
+}

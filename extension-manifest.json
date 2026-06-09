@@ -1,0 +1,22 @@
+{
+  "id": "ui-consistency",
+  "name": "UI Consistency",
+  "version": "1.0.0",
+  "description": "Design system generation, drift detection, and wave-based remediation for UI/UX consistency",
+  "tier": "community",
+  "requires": { "platform": ">=2.29.0" },
+  "provides": {
+    "tools": [
+      "ui_consistency_scan",
+      "ui_consistency_audit",
+      "ui_consistency_generate_design_system",
+      "ui_consistency_fix",
+      "ui_consistency_self_test"
+    ],
+    "commands": ["ui-consistency"],
+    "hooks": [
+      "session_start",
+      "before_agent_start"
+    ]
+  }
+}

@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+"""Test: No fake/unimplemented features in config"""
+
+from pathlib import Path
+
+PREFERENCES = Path("~/.gsd/PREFERENCES.md").expanduser()
+SKILL = Path("~/.agents/skills/ui-consistency/SKILL.md").expanduser()
+
+
+def test_no_prompt_context_injection():
+    """promptContext.injection must not exist at top-level - feature not implemented"""
+    content = PREFERENCES.read_text()
+
+    # Check that there's no standalone uiGates section with injection
+    # uiGates is acceptable if it's only for the project-local extension config
+    # but promptContext.injection is not a real preference key
+    assert "injection: enabled" not in content, \
+        "promptContext.injection is not implemented as a global pref - remove from config"
+
+
+def test_no_standalone_uigates_section():
+    """uiGates top-level section must not exist - move to uiConsistency"""
+    content = PREFERENCES.read_text()
+
+    assert "uiGates:" not in content, \
+        "uiGates top-level section should be replaced with uiConsistency"
+
+
+def test_no_completion_enforcement_fake():
+    """completionEnforcement must not exist as top-level pref"""
+    content = PREFERENCES.read_text()
+
+    # completionEnforcement is a project-local extension config, not a global pref
+    assert "completionEnforcement:" not in content, \
+        "completionEnforcement is not a global pref - belongs to project-local extension"
+
+
+def test_only_working_config_present():
+    """Only working config sections should exist"""
+    content = PREFERENCES.read_text()
+
+    # uiConsistency should exist
+    assert "uiConsistency:" in content, "uiConsistency section should exist"
+
+    # pre_dispatch_hooks should still work
+    assert "pre_dispatch_hooks:" in content, "pre_dispatch_hooks should exist"
+
+
+if __name__ == "__main__":
+    test_no_prompt_context_injection()
+    test_no_standalone_uigates_section()
+    test_no_completion_enforcement_fake()
+    test_only_working_config_present()
+    print("✅ All no-fake-features tests pass")
