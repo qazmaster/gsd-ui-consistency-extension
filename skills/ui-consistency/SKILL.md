@@ -65,6 +65,11 @@ GSD auto-mode integration via stable extension points:
 When the hook fires, the executor sees STYLE_PICK reference in the task plan and follows
 its color palette, typography, spacing, and component specs.
 
+**Deprecated workflow template:**
+The old `ui-consistency` workflow template (`/gsd start ui-consistency`) is deprecated.
+Use this skill directly — mention "check UI consistency" or "audit design system" and
+routing will activate automatically. The template is kept for backward compatibility only.
+
 **Implemented layers:** A, B, C (fully working).
 
 **NOT implemented (documented for future enhancement):**
@@ -143,7 +148,8 @@ Based on user intent, route to the appropriate workflow:
 
 **Artifacts location:**
 - Design system: `.gsd/ui-gates/` (STYLE_PICK.md, DESIGN_DNA.md, COMPONENT_PLAN.md)
-- Workflow runtime: `.gsd/workflows/ui-consistency/YYYY-MM-DD/` (RESEARCH.md, AUDIT.md, etc.)
+- Audit results: `.gsd/ui-gates/` (AUDIT.md, PRIORITY.md, INVENTORY.md, UI_VERIFY.json)
+- Legacy location (deprecated): `.gsd/workflows/ui-consistency/YYYY-MM-DD/` — migrate to unified dir
 
 **Command reference:**
 | Command | Effect |

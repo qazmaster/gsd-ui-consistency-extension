@@ -93,5 +93,5 @@ Run this when no design system exists in `.gsd/ui-gates/`.
 - `.gsd/ui-gates/DESIGN_DNA.md` exists with personality and anti-patterns
 - `.gsd/ui-gates/COMPONENT_PLAN.md` exists with component specs
 - User has reviewed and approved
-- RESEARCH.md saved in `.gsd/workflows/ui-consistency/YYYY-MM-DD/`
+- RESEARCH.md saved in `.gsd/ui-gates/RESEARCH.md`
 </success_criteria>

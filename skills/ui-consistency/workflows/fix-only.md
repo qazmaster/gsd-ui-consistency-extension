@@ -14,8 +14,8 @@ to execute the fix plan. Requires AUDIT.md and PRIORITY.md to exist.
 1. **Verify prerequisites:**
    ```bash
    # Find latest audit
-   ls -t .gsd/workflows/ui-consistency/*/AUDIT.md | head -1
-   ls -t .gsd/workflows/ui-consistency/*/PRIORITY.md | head -1
+   ls -t .gsd/ui-gates/AUDIT.md 2>/dev/null || ls -t .gsd/workflows/ui-consistency/*/AUDIT.md | head -1
+   ls -t .gsd/ui-gates/PRIORITY.md 2>/dev/null || ls -t .gsd/workflows/ui-consistency/*/PRIORITY.md | head -1
    ```
    If missing → run audit-and-fix workflow first.
 

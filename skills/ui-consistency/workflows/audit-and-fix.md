@@ -152,7 +152,7 @@ Fix Wave 1 (tokens) only:
 2. Verify
 3. Recommend: run refactor workflow for remaining changes
    ```
-   /gsd workflow refactor 'apply UI consistency fixes' --context .gsd/workflows/ui-consistency/YYYY-MM-DD/AUDIT.md
+   /gsd workflow refactor 'apply UI consistency fixes' --context .gsd/ui-gates/AUDIT.md
    ```
 
 **Hard mode (>200 files):**
@@ -160,7 +160,7 @@ Fix Wave 1 (tokens) only:
 No code changes. Generate AUDIT.md + PRIORITY.md only.
 Recommend:
 ```
-/gsd workflow refactor 'apply UI consistency fixes' --context .gsd/workflows/ui-consistency/YYYY-MM-DD/AUDIT.md
+/gsd workflow refactor 'apply UI consistency fixes' --context .gsd/ui-gates/AUDIT.md
 ```
 
 ## Phase 5: Verify

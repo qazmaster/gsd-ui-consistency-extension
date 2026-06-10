@@ -1,18 +1,24 @@
-# UI/UX Consistency Workflow
+# UI/UX Consistency Workflow (DEPRECATED)
+
+> **DEPRECATED:** This workflow template is deprecated. Use the `ui-consistency` skill instead.
+> The skill provides better integration with GSD auto-mode, unified artifact directory (`.gsd/ui-gates/`),
+> and proper guard layer via `ui-ux-uat-gates`.
+>
+> To use: simply mention "check UI consistency" or "audit design system" and the skill will route automatically.
 
 <template_meta>
 name: ui-consistency
 version: 1
 mode: markdown-phase
 requires_project: false
-artifact_dir: .gsd/workflows/ui-consistency/
+artifact_dir: .gsd/ui-gates/
+deprecated: true
+replacement: ui-consistency skill
 </template_meta>
 
 <purpose>
-Ensure visual and behavioral consistency across all UI components. Generates design system
-documents (STYLE_PICK, DESIGN_DNA, COMPONENT_PLAN), scans codebase for drift, classifies
-components as modern/legacy/drift/unknown, and fixes inconsistencies in waves. Complexity
-determines mode: simple (fix all), medium (fix tokens), hard (audit only).
+DEPRECATED: Use ui-consistency skill instead. This template is kept for backward compatibility.
+Original purpose: Ensure visual and behavioral consistency across all UI components.
 </purpose>
 
 <phases>
