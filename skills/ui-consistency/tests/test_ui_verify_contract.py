@@ -18,9 +18,11 @@ def _find_extension_root():
             return current
         current = current.parent
     # Fallback 1: check if we're in ~/.agents/skills/ and look for extension in ~/.gsd/
-    gsd_ext = Path.home() / ".gsd" / "agent" / "extensions" / "gsd"
-    if (gsd_ext / "index.ts").exists():
-        return gsd_ext
+    # Try ui-consistency first (our extension), then gsd (built-in)
+    for ext_name in ["ui-consistency", "gsd"]:
+        gsd_ext = Path.home() / ".gsd" / "agent" / "extensions" / ext_name
+        if (gsd_ext / "index.ts").exists():
+            return gsd_ext
     # Fallback 2: assume we're in source repo
     return Path(_TEST_DIR).resolve().parents[2]
 
