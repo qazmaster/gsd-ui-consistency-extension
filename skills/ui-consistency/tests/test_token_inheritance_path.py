@@ -7,8 +7,49 @@ from pathlib import Path
 
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 SKILL_DIR = Path(os.path.normpath(os.path.join(_TEST_DIR, "..")))
-PREFERENCES = Path("~/.gsd/PREFERENCES.md").expanduser()
-WORKFLOW = Path("~/.gsd/agent/extensions/gsd/workflow-templates/ui-consistency.md").expanduser()
+
+# Auto-detect extension root (walk up until we find index.ts)
+def _find_extension_root():
+    """Walk up from test dir to find extension root (where index.ts lives)."""
+    current = Path(_TEST_DIR).resolve()
+    while current != current.parent:
+        if (current / "index.ts").exists():
+            return current
+        current = current.parent
+    # Fallback: assume we're in source repo
+    return Path(_TEST_DIR).resolve().parents[2]
+
+_EXTENSION_ROOT = _find_extension_root()
+
+# Try to find PREFERENCES.md in multiple locations
+def _find_preferences():
+    """Find PREFERENCES.md in source repo or installed location."""
+    # Source repo location
+    src = _EXTENSION_ROOT / ".gsd" / "PREFERENCES.md"
+    if src.exists():
+        return src
+    # Installed location
+    installed = Path("~/.gsd/PREFERENCES.md").expanduser()
+    if installed.exists():
+        return installed
+    # Fallback: just return source path for error message
+    return src
+
+def _find_workflow():
+    """Find workflow template in source repo or installed location."""
+    # Source repo location
+    src = _EXTENSION_ROOT / "prompts" / "ui-consistency.md"
+    if src.exists():
+        return src
+    # Installed location
+    installed = Path("~/.gsd/agent/extensions/gsd/workflow-templates/ui-consistency.md").expanduser()
+    if installed.exists():
+        return installed
+    # Fallback
+    return src
+
+PREFERENCES = _find_preferences()
+WORKFLOW = _find_workflow()
 REFERENCE = SKILL_DIR / "references" / "token-inheritance.md"
 
 
