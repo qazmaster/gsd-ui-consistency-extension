@@ -21,6 +21,14 @@ provides three capabilities:
 
 The skill operates in three complexity modes: **simple** (inline fixes, <50 components),
 **medium** (token fixes only, rest via refactor), **hard** (audit-only, no code changes).
+
+**Phases:**
+0. **Research** — analyze codebase + ask user design questions
+1. **Generate** — create STYLE_PICK.md, DESIGN_DNA.md, COMPONENT_PLAN.md
+2. **Scan** — find all UI files, classify, count metrics
+3. **Audit** — check each file against design system, prioritize findings
+4. **Fix** — apply fixes (complexity-dependent) or generate AUDIT.md
+5. **Verify** — re-scan, browser screenshots, before/after comparison
 </objective>
 
 <essential_principles>

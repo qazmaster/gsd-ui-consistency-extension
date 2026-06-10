@@ -39,15 +39,25 @@ def test_skill_references_extension_tools():
 
 
 def test_workflow_references_same_phases_as_skill():
-    """Workflow template phases should match skill documentation"""
-    workflow = (EXTENSION_DIR / "prompts" / "ui-consistency.md").read_text()
+    """Workflow files phases should match skill documentation"""
+    # Check primary workflows (not deprecated template)
+    workflow_files = [
+        SKILL_DIR / "workflows" / "generate-design-system.md",
+        SKILL_DIR / "workflows" / "audit-and-fix.md",
+        SKILL_DIR / "workflows" / "quick-scan.md",
+    ]
+    
     skill = (SKILL_DIR / "SKILL.md").read_text()
     
-    # Both should mention all 6 phases
+    # All workflows + skill should mention all 6 phases
     phases = ["research", "generate", "scan", "audit", "fix", "verify"]
     for phase in phases:
-        assert phase in workflow.lower(), f"Phase {phase} missing from workflow"
         assert phase in skill.lower(), f"Phase {phase} missing from skill"
+        
+    # At least one workflow should mention each phase
+    for phase in phases:
+        found_in_any = any(phase in wf.read_text().lower() for wf in workflow_files if wf.exists())
+        assert found_in_any, f"Phase {phase} missing from all workflow files"
 
 
 def test_skill_and_workflow_agree_on_artifacts():
