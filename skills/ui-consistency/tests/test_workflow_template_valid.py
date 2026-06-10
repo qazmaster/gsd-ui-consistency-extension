@@ -15,6 +15,10 @@ def _find_root(marker="index.ts", max_depth=5):
         if parent == d:
             break
         d = parent
+    # Fallback: check if we're installed and look in ~/.gsd/
+    gsd_ext = Path.home() / ".gsd" / "agent" / "extensions" / "ui-consistency"
+    if (gsd_ext / marker).exists():
+        return str(gsd_ext)
     return os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".."))
 
 _EXTENSION_ROOT = _find_root()
