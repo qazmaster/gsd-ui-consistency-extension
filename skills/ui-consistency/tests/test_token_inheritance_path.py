@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Test: Token inheritance config path is consistent across all files"""
 
+import os
 import re
 from pathlib import Path
 
+_TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+SKILL_DIR = Path(os.path.normpath(os.path.join(_TEST_DIR, "..")))
 PREFERENCES = Path("~/.gsd/PREFERENCES.md").expanduser()
 WORKFLOW = Path("~/.gsd/agent/extensions/gsd/workflow-templates/ui-consistency.md").expanduser()
-REFERENCE = Path("~/.agents/skills/ui-consistency/references/token-inheritance.md").expanduser()
+REFERENCE = SKILL_DIR / "references" / "token-inheritance.md"
 
 
 def test_preferences_has_design_system_base():

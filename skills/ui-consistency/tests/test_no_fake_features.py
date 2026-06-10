@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """Test: No fake/unimplemented features in config"""
 
+import os
 from pathlib import Path
 
+_TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+SKILL_DIR = Path(os.path.normpath(os.path.join(_TEST_DIR, "..")))
 PREFERENCES = Path("~/.gsd/PREFERENCES.md").expanduser()
-SKILL = Path("~/.agents/skills/ui-consistency/SKILL.md").expanduser()
+SKILL = SKILL_DIR / "SKILL.md"
 
 
 def test_no_prompt_context_injection():

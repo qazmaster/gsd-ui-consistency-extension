@@ -1,10 +1,24 @@
 #!/usr/bin/env python3
 """Test: Skill files (SKILL.md, workflows, references) are complete and consistent"""
 
+import os
 import re
 from pathlib import Path
 
-EXTENSION_DIR = Path("~/.pi/agent/extensions/ui-consistency").expanduser()
+def _find_root(marker="index.ts", max_depth=5):
+    """Walk up from this file to find directory containing marker."""
+    d = os.path.dirname(os.path.abspath(__file__))
+    for _ in range(max_depth):
+        if os.path.isfile(os.path.join(d, marker)):
+            return d
+        parent = os.path.dirname(d)
+        if parent == d:
+            break
+        d = parent
+    return os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".."))
+
+_EXTENSION_ROOT = _find_root()
+EXTENSION_DIR = Path(_EXTENSION_ROOT)
 SKILL_DIR = EXTENSION_DIR / "skills" / "ui-consistency"
 
 

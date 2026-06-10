@@ -1,7 +1,7 @@
 import type { ExtensionAPI } from "@gsd/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
 import { StringEnum } from "@gsd/pi-ai";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, copyFileSync } from "node:fs";
 import { join } from "node:path";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -52,13 +52,127 @@ function readDesignSystem(cwd: string): { stylePick: string; designDna: string; 
   }
 }
 
-// ─── Helper: classify UI files ──────────────────────────────────────────────
+// ─── Types ─────────────────────────────────────────────────────────────────
+
+/** Severity levels for audit findings. */
+type FindingSeverity = "critical" | "warning" | "info";
 
 /** Classification result for a single UI file. */
 interface FileClassification {
   path: string;
   classification: "modern" | "legacy" | "drift" | "unknown";
   reason: string;
+}
+
+/** A single audit finding with context and fix suggestion. */
+interface AuditFinding {
+  file: string;
+  severity: FindingSeverity;
+  issue: string;
+  line?: number;
+  contextLines?: string[];
+  contextStartLine?: number;
+  fixSuggestion?: string;
+}
+
+/** Severity sort order (critical first). */
+const SEVERITY_ORDER: Record<FindingSeverity, number> = {
+  critical: 0,
+  warning: 1,
+  info: 2,
+};
+
+// ─── Helper: extract context lines ─────────────────────────────────────────
+
+/**
+ * Extract ±radius lines around a 1-based line number.
+ * @param content - Full file content.
+ * @param line - 1-based line number.
+ * @param radius - Number of lines before/after.
+ * @returns Object with context lines and start line.
+ */
+function extractContext(content: string, line: number, radius = 3): { lines: string[]; startLine: number } {
+  const allLines = content.split("\n");
+  const zero = line - 1;
+  const start = Math.max(0, zero - radius);
+  const end = Math.min(allLines.length, zero + radius + 1);
+  return { lines: allLines.slice(start, end), startLine: start + 1 };
+}
+
+/**
+ * Find the 1-based line number of the first match in content.
+ * @param content - File content.
+ * @param pattern - RegExp pattern to search.
+ * @returns 1-based line number or undefined.
+ */
+function findLineNumber(content: string, pattern: RegExp): number | undefined {
+  const match = pattern.exec(content);
+  if (!match) return undefined;
+  const before = content.slice(0, match.index);
+  return before.split("\n").length;
+}
+
+// ─── Helper: generate fix suggestion from design system ────────────────────
+
+/**
+ * Generate fix suggestion based on hardcoded color and STYLE_PICK.
+ * @param hardcodedColor - The hardcoded color found.
+ * @param stylePick - STYLE_PICK.md content (optional).
+ * @returns Fix suggestion string.
+ */
+function generateFixSuggestion(hardcodedColor: string, stylePick?: string): string {
+  const lower = hardcodedColor.toLowerCase();
+
+  // Common mappings as fallback
+  const commonMappings: Record<string, string> = {
+    "#fff": "var(--color-background) or bg-white",
+    "#ffffff": "var(--color-background) or bg-white",
+    "#000": "var(--color-text) or text-black",
+    "#000000": "var(--color-text) or text-black",
+    "#333": "var(--color-text-secondary) or text-gray-700",
+    "#333333": "var(--color-text-secondary) or text-gray-700",
+    "#666": "var(--color-text-muted) or text-gray-500",
+    "#666666": "var(--color-text-muted) or text-gray-500",
+    "#f5f5f5": "var(--color-background-secondary) or bg-gray-50",
+    "#eee": "var(--color-border) or border-gray-200",
+    "#eeeeee": "var(--color-border) or border-gray-200",
+    "#ccc": "var(--color-border) or border-gray-300",
+    "#cccccc": "var(--color-border) or border-gray-300",
+  };
+
+  const mapped = commonMappings[lower];
+  if (mapped) return `Replace with ${mapped}`;
+
+  // If STYLE_PICK exists, suggest checking it
+  if (stylePick) return `Check STYLE_PICK.md for matching token. Consider CSS variable or Tailwind class.`;
+
+  return `Replace with CSS variable from design system or Tailwind utility class.`;
+}
+
+// ─── Helper: deduplicate findings ───────────────────────────────────────────
+
+/**
+ * Deduplicate findings by (file, line, issue).
+ * @param findings - Array of findings.
+ * @returns Deduplicated array.
+ */
+function deduplicateFindings(findings: AuditFinding[]): AuditFinding[] {
+  const seen = new Set<string>();
+  return findings.filter(f => {
+    const key = `${f.file}:${f.line ?? ""}:${f.issue}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+/**
+ * Sort findings by severity (critical first).
+ * @param findings - Array of findings.
+ * @returns Sorted array.
+ */
+function sortBySeverity(findings: AuditFinding[]): AuditFinding[] {
+  return [...findings].sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]);
 }
 
 /**
@@ -278,7 +392,7 @@ function registerAuditTool(pi: ExtensionAPI) {
         details: { progress: 50 },
       });
 
-      const findings: Array<{ file: string; severity: "critical" | "warning" | "info"; issue: string }> = [];
+      const findings: AuditFinding[] = [];
 
       for (const file of files) {
         try {
@@ -286,38 +400,66 @@ function registerAuditTool(pi: ExtensionAPI) {
           const relativePath = file.replace(cwd + "/", "");
 
           // Check for hardcoded colors
-          const hardcodedColors = content.match(/#[0-9a-fA-F]{3,8}\b/g) || [];
+          const hardcodedColorPattern = /#[0-9a-fA-F]{3,8}\b/g;
+          const hardcodedColors = content.match(hardcodedColorPattern) || [];
           if (hardcodedColors.length > 0) {
+            const uniqueColors = [...new Set(hardcodedColors.map(c => c.toLowerCase()))];
+            const firstColorLine = findLineNumber(content, hardcodedColorPattern);
+            const context = firstColorLine ? extractContext(content, firstColorLine) : undefined;
+
             findings.push({
               file: relativePath,
               severity: "critical",
-              issue: `Hardcoded colors: ${[...new Set(hardcodedColors)].slice(0, 5).join(", ")}${hardcodedColors.length > 5 ? "..." : ""}`,
+              issue: `Hardcoded colors: ${uniqueColors.slice(0, 5).join(", ")}${uniqueColors.length > 5 ? "..." : ""}`,
+              line: firstColorLine,
+              contextLines: context?.lines,
+              contextStartLine: context?.startLine,
+              fixSuggestion: generateFixSuggestion(uniqueColors[0], ds?.stylePick),
             });
           }
 
           // Check for inline styles
-          const inlineStyles = (content.match(/style\s*=\s*\{\{/g) || []).length;
+          const inlineStylePattern = /style\s*=\s*\{\{/g;
+          const inlineStyles = (content.match(inlineStylePattern) || []).length;
           if (inlineStyles > 0) {
+            const firstLine = findLineNumber(content, inlineStylePattern);
+            const context = firstLine ? extractContext(content, firstLine) : undefined;
+
             findings.push({
               file: relativePath,
               severity: "warning",
-              issue: `${inlineStyles} inline style instances`,
+              issue: `${inlineStyles} inline style instance${inlineStyles > 1 ? "s" : ""}`,
+              line: firstLine,
+              contextLines: context?.lines,
+              contextStartLine: context?.startLine,
+              fixSuggestion: "Extract inline styles to CSS classes or Tailwind utilities.",
             });
           }
 
           // Check for px values (should use rem/em)
-          const pxValues = (content.match(/\d+px/g) || []).length;
+          const pxPattern = /\d+px/g;
+          const pxValues = (content.match(pxPattern) || []).length;
           if (pxValues > 5) {
+            const firstLine = findLineNumber(content, pxPattern);
+
             findings.push({
               file: relativePath,
               severity: "info",
               issue: `${pxValues} px values (consider rem/em)`,
+              line: firstLine,
+              fixSuggestion: "Convert px values to rem (16px = 1rem) or use spacing tokens.",
             });
           }
         } catch {
           // Skip unreadable files
         }
       }
+
+      // Deduplicate and sort by severity
+      const deduplicated = deduplicateFindings(findings);
+      const sorted = sortBySeverity(deduplicated);
+      findings.length = 0;
+      findings.push(...sorted);
 
       onUpdate?.({
         content: [{ type: "text", text: "Audit complete." }],
@@ -328,6 +470,27 @@ function registerAuditTool(pi: ExtensionAPI) {
       const warning = findings.filter(f => f.severity === "warning").length;
       const info = findings.filter(f => f.severity === "info").length;
 
+      // Build report with context and fix suggestions
+      const findingReports = findings.map(f => {
+        const parts = [`### [${f.severity.toUpperCase()}] ${f.file}${f.line ? ` (line ${f.line})` : ""}`];
+        parts.push(`- ${f.issue}`);
+        if (f.contextLines && f.contextStartLine) {
+          parts.push("");
+          parts.push("**Context:**");
+          parts.push("```");
+          f.contextLines.forEach((line, i) => {
+            const lineNum = f.contextStartLine! + i;
+            const marker = f.line === lineNum ? ">>> " : "    ";
+            parts.push(`${marker}${lineNum}: ${line}`);
+          });
+          parts.push("```");
+        }
+        if (f.fixSuggestion) {
+          parts.push(`- **Fix:** ${f.fixSuggestion}`);
+        }
+        return parts.join("\n");
+      });
+
       const report = [
         `# UI Consistency Audit Report`,
         ``,
@@ -335,12 +498,12 @@ function registerAuditTool(pi: ExtensionAPI) {
         `**Files audited:** ${files.length}`,
         ``,
         `## Findings Summary`,
-        `- Critical: ${critical}`,
-        `- Warning: ${warning}`,
-        `- Info: ${info}`,
+        `- 🔴 Critical: ${critical}`,
+        `- 🟡 Warning: ${warning}`,
+        `- 🔵 Info: ${info}`,
         ``,
         `## Detailed Findings`,
-        ...findings.map(f => `### [${f.severity.toUpperCase()}] ${f.file}\n- ${f.issue}`),
+        ...findingReports,
       ].join("\n");
 
       return {
@@ -585,6 +748,13 @@ function registerFixTool(pi: ExtensionAPI) {
           "#000000": "var(--color-text)",
           "#333": "var(--color-text-secondary)",
           "#333333": "var(--color-text-secondary)",
+          "#666": "var(--color-text-muted)",
+          "#666666": "var(--color-text-muted)",
+          "#f5f5f5": "var(--color-background-secondary)",
+          "#eee": "var(--color-border)",
+          "#eeeeee": "var(--color-border)",
+          "#ccc": "var(--color-border)",
+          "#cccccc": "var(--color-border)",
         };
 
         for (const [hardcoded, token] of Object.entries(colorMap)) {
@@ -602,8 +772,37 @@ function registerFixTool(pi: ExtensionAPI) {
       });
 
       if (changes > 0) {
-        const { writeFileSync } = await import("node:fs");
-        writeFileSync(filePath, fixed);
+        // Create backup before applying fixes
+        const backupPath = filePath + ".bak";
+        try {
+          copyFileSync(filePath, backupPath);
+        } catch {
+          // Backup failed — continue anyway
+        }
+
+        try {
+          writeFileSync(filePath, fixed);
+          // Remove backup on success
+          try {
+            const { unlinkSync } = await import("node:fs");
+            unlinkSync(backupPath);
+          } catch {
+            // Ignore cleanup error
+          }
+        } catch (writeErr) {
+          // Restore from backup on failure
+          try {
+            copyFileSync(backupPath, filePath);
+            const { unlinkSync } = await import("node:fs");
+            unlinkSync(backupPath);
+          } catch {
+            // Restore failed — backup file still exists
+          }
+          return {
+            content: [{ type: "text", text: `Failed to write fixes: ${writeErr instanceof Error ? writeErr.message : "unknown error"}. File restored from backup.` }],
+            details: { error: "write_failed", file: params.file },
+          };
+        }
       }
 
       return {

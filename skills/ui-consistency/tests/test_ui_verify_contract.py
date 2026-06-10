@@ -2,11 +2,14 @@
 """Contract test: ui-consistency workflow template generates valid UI_VERIFY.json"""
 
 import json
+import os
 import re
 from pathlib import Path
 
+_TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+SKILL_DIR = Path(os.path.normpath(os.path.join(_TEST_DIR, "..")))
 WORKFLOW_TEMPLATE = Path("~/.gsd/agent/extensions/gsd/workflow-templates/ui-consistency.md").expanduser()
-DESIGN_SYSTEM_FORMAT = Path("~/.agents/skills/ui-consistency/references/design-system-format.md").expanduser()
+DESIGN_SYSTEM_FORMAT = SKILL_DIR / "references" / "design-system-format.md"
 
 def test_workflow_template_generates_correct_schema_version():
     """Workflow template Phase 6 must generate schemaVersion: ui-verify.fixture.v1"""

@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """Test: Unknown classification exists for edge cases"""
 
+import os
 from pathlib import Path
 
+_TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+SKILL_DIR = Path(os.path.normpath(os.path.join(_TEST_DIR, "..")))
 WORKFLOW = Path("~/.gsd/agent/extensions/gsd/workflow-templates/ui-consistency.md").expanduser()
-REF = Path("~/.agents/skills/ui-consistency/references/legacy-classification.md").expanduser()
+REF = SKILL_DIR / "references" / "legacy-classification.md"
 
 
 def test_unknown_in_workflow():

@@ -2,9 +2,23 @@
 """Test: extension-manifest.json is valid and complete"""
 
 import json
+import os
 from pathlib import Path
 
-EXTENSION_DIR = Path("~/.pi/agent/extensions/ui-consistency").expanduser()
+def _find_root(marker="index.ts", max_depth=5):
+    """Walk up from this file to find directory containing marker."""
+    d = os.path.dirname(os.path.abspath(__file__))
+    for _ in range(max_depth):
+        if os.path.isfile(os.path.join(d, marker)):
+            return d
+        parent = os.path.dirname(d)
+        if parent == d:
+            break
+        d = parent
+    return os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".."))
+
+_EXTENSION_ROOT = _find_root()
+EXTENSION_DIR = Path(_EXTENSION_ROOT)
 MANIFEST = EXTENSION_DIR / "extension-manifest.json"
 
 

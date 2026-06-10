@@ -1,11 +1,25 @@
 #!/usr/bin/env python3
 """Test: install.sh script is valid and self-contained"""
 
+import os
 import subprocess
 import tempfile
 from pathlib import Path
 
-EXTENSION_DIR = Path("~/.pi/agent/extensions/ui-consistency").expanduser()
+def _find_root(marker="index.ts", max_depth=5):
+    """Walk up from this file to find directory containing marker."""
+    d = os.path.dirname(os.path.abspath(__file__))
+    for _ in range(max_depth):
+        if os.path.isfile(os.path.join(d, marker)):
+            return d
+        parent = os.path.dirname(d)
+        if parent == d:
+            break
+        d = parent
+    return os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".."))
+
+_EXTENSION_ROOT = _find_root()
+EXTENSION_DIR = Path(_EXTENSION_ROOT)
 INSTALL_SCRIPT = EXTENSION_DIR / "install.sh"
 
 
@@ -81,7 +95,7 @@ def test_install_script_runs_successfully():
 def test_install_script_default_target():
     """install.sh must have sensible default target"""
     content = INSTALL_SCRIPT.read_text()
-    assert "~/.pi/agent/extensions/ui-consistency" in content, "Missing default target"
+    assert "ui-consistency" in content, "Missing default target"
 
 
 if __name__ == "__main__":

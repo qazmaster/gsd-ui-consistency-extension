@@ -3,3 +3,17 @@ node_modules/
 .DS_Store
 *.tsbuildinfo
 dist/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# GSD runtime
+.gsd/gsd.db
+.gsd/gsd.db-shm
+.gsd/gsd.db-wal
+.gsd/notifications.jsonl
+.gsd/last-snapshot.md
+.gsd/CODEBASE.md
+.gsd/KNOWLEDGE.md
+.gsd/workflows/
