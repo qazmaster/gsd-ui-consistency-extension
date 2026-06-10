@@ -23,6 +23,9 @@ def _find_root(marker="index.ts", max_depth=5):
 _EXTENSION_ROOT = _find_root()
 EXTENSION_DIR = Path(_EXTENSION_ROOT)
 SKILL_DIR = EXTENSION_DIR / "skills" / "ui-consistency"
+# Fallback to installed location
+if not SKILL_DIR.exists():
+    SKILL_DIR = Path.home() / ".agents" / "skills" / "ui-consistency"
 
 
 def test_skill_references_extension_tools():

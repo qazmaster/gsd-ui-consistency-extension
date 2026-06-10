@@ -47,7 +47,11 @@ def test_readme_exists():
 
 def test_skills_directory_exists():
     """skills/ directory with ui-consistency skill must exist"""
+    # Check in extension dir first (source repo)
     skill_dir = EXTENSION_DIR / "skills" / "ui-consistency"
+    # Fallback to installed location
+    if not skill_dir.exists():
+        skill_dir = Path.home() / ".agents" / "skills" / "ui-consistency"
     assert skill_dir.exists(), f"Skill directory not found: {skill_dir}"
     assert (skill_dir / "SKILL.md").exists(), "SKILL.md not found in skill directory"
 
@@ -62,6 +66,9 @@ def test_prompts_directory_exists():
 def test_workflows_directory_exists():
     """skills/ui-consistency/workflows/ must contain workflow files"""
     workflows_dir = EXTENSION_DIR / "skills" / "ui-consistency" / "workflows"
+    # Fallback to installed location
+    if not workflows_dir.exists():
+        workflows_dir = Path.home() / ".agents" / "skills" / "ui-consistency" / "workflows"
     assert workflows_dir.exists(), "workflows/ directory not found"
     
     required_workflows = [
@@ -77,6 +84,9 @@ def test_workflows_directory_exists():
 def test_references_directory_exists():
     """skills/ui-consistency/references/ must contain reference docs"""
     refs_dir = EXTENSION_DIR / "skills" / "ui-consistency" / "references"
+    # Fallback to installed location
+    if not refs_dir.exists():
+        refs_dir = Path.home() / ".agents" / "skills" / "ui-consistency" / "references"
     assert refs_dir.exists(), "references/ directory not found"
     
     required_refs = [
@@ -93,6 +103,9 @@ def test_references_directory_exists():
 def test_tests_directory_exists():
     """skills/ui-consistency/tests/ must contain test files"""
     tests_dir = EXTENSION_DIR / "skills" / "ui-consistency" / "tests"
+    # Fallback to installed location
+    if not tests_dir.exists():
+        tests_dir = Path.home() / ".agents" / "skills" / "ui-consistency" / "tests"
     assert tests_dir.exists(), "tests/ directory not found"
     assert (tests_dir / "run_all_tests.py").exists(), "run_all_tests.py not found"
 
