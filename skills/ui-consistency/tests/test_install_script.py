@@ -24,7 +24,13 @@ def _find_root(marker="index.ts", max_depth=5):
 
 _EXTENSION_ROOT = _find_root()
 EXTENSION_DIR = Path(_EXTENSION_ROOT)
-INSTALL_SCRIPT = EXTENSION_DIR / "install.sh"
+
+# install.sh is removed from target during install, so check source location first
+_SOURCE_ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".."))
+SOURCE_DIR = Path(_SOURCE_ROOT)
+INSTALL_SCRIPT = SOURCE_DIR / "install.sh"
+if not INSTALL_SCRIPT.exists():
+    INSTALL_SCRIPT = EXTENSION_DIR / "install.sh"
 
 
 def test_install_script_exists():
