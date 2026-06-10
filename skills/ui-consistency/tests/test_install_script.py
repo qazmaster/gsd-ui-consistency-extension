@@ -25,12 +25,22 @@ def _find_root(marker="index.ts", max_depth=5):
 _EXTENSION_ROOT = _find_root()
 EXTENSION_DIR = Path(_EXTENSION_ROOT)
 
-# install.sh is removed from target during install, so check source location first
-_SOURCE_ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".."))
-SOURCE_DIR = Path(_SOURCE_ROOT)
-INSTALL_SCRIPT = SOURCE_DIR / "install.sh"
-if not INSTALL_SCRIPT.exists():
-    INSTALL_SCRIPT = EXTENSION_DIR / "install.sh"
+# install.sh is removed from target during install, so search for it
+def _find_install_script():
+    """Search for install.sh in parent directories."""
+    d = os.path.dirname(os.path.abspath(__file__))
+    for _ in range(10):  # Search up to 10 levels
+        candidate = Path(d) / "install.sh"
+        if candidate.exists():
+            return candidate
+        parent = os.path.dirname(d)
+        if parent == d:
+            break
+        d = parent
+    # Fallback to extension dir
+    return EXTENSION_DIR / "install.sh"
+
+INSTALL_SCRIPT = _find_install_script()
 
 
 def test_install_script_exists():
