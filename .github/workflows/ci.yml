@@ -25,8 +25,9 @@ jobs:
       - name: Check install script
         run: |
           chmod +x install.sh
-          ./install.sh /tmp/test-install
-          test -f /tmp/test-install/package.json
-          test -f /tmp/test-install/extension-manifest.json
-          test -f /tmp/test-install/index.ts
-          test ! -f /tmp/test-install/install.sh
+          # Install to default location so tests can find extension files
+          ./install.sh "$HOME/.gsd/agent/extensions/ui-consistency"
+          test -f "$HOME/.gsd/agent/extensions/ui-consistency/package.json"
+          test -f "$HOME/.gsd/agent/extensions/ui-consistency/extension-manifest.json"
+          test -f "$HOME/.gsd/agent/extensions/ui-consistency/index.ts"
+          test ! -f "$HOME/.gsd/agent/extensions/ui-consistency/install.sh"
