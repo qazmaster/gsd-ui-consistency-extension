@@ -37,7 +37,16 @@ def _find_install_script():
         if parent == d:
             break
         d = parent
-    # Fallback to extension dir
+    # Fallback 1: check extension dir
+    candidate = EXTENSION_DIR / "install.sh"
+    if candidate.exists():
+        return candidate
+    # Fallback 2: check common CI paths
+    for ci_path in ["/home/runner/work", "/github/workspace"]:
+        if os.path.isdir(ci_path):
+            for root, dirs, files in os.walk(ci_path):
+                if "install.sh" in files:
+                    return Path(root) / "install.sh"
     return EXTENSION_DIR / "install.sh"
 
 INSTALL_SCRIPT = _find_install_script()
