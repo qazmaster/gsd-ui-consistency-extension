@@ -22,7 +22,9 @@ mkdir -p "$TARGET_DIR"
 
 # Copy extension files (excluding skills directory)
 echo "[1/4] Installing extension files..."
-for item in "$SCRIPT_DIR"/*; do
+for item in "$SCRIPT_DIR"/* "$SCRIPT_DIR"/.[^.]*; do
+    # Skip if glob didn't match
+    [ -e "$item" ] || continue
     basename="$(basename "$item")"
     # Skip skills directory — handled separately
     if [ "$basename" = "skills" ]; then
