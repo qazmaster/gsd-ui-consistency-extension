@@ -17,7 +17,11 @@ def _find_extension_root():
         if (current / "index.ts").exists():
             return current
         current = current.parent
-    # Fallback: assume we're in source repo
+    # Fallback 1: check if we're in ~/.agents/skills/ and look for extension in ~/.gsd/
+    gsd_ext = Path.home() / ".gsd" / "agent" / "extensions" / "gsd"
+    if (gsd_ext / "index.ts").exists():
+        return gsd_ext
+    # Fallback 2: assume we're in source repo
     return Path(_TEST_DIR).resolve().parents[2]
 
 _EXTENSION_ROOT = _find_extension_root()
