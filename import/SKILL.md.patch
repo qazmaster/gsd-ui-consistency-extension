@@ -1,0 +1,214 @@
+
+<!-- BEGIN UI CONSISTENCY UNIFIED APPEND -->
+<!-- This section is appended to existing SKILL.md -->
+
+<essential_principles>
+
+## Core Idea
+
+UI consistency work produces **four artifacts** that serve as the single source of truth:
+
+1. **STYLE_PICK.md** — visual direction (colors, typography, spacing, motion)
+2. **DESIGN_DNA.md** — personality (density, trust, anti-patterns)
+3. **COMPONENT_PLAN.md** — component specs (states, sizes, verification)
+4. **UI_VERIFY.json** — browser-backed verification evidence
+
+All artifacts live in `.gsd/ui-gates/` (unified directory).
+
+## Three Execution Modes
+
+| Mode | When | What happens |
+|---|---|---|
+| **simple** | < 50 UI files | Generate → audit → fix all → verify |
+| **medium** | 50-200 UI files | Generate → audit → fix tokens → recommend refactor |
+| **hard** | > 200 UI files | Generate → audit → no fixes → recommend refactor |
+
+## Integration with Auto-Mode
+
+After ui-consistency workflow completes:
+
+1. **capture_thought()** for architectural insights (token patterns, component boundaries)
+2. **Recommend /gsd auto** for implementation of fixes
+3. **Auto-mode reads** `.gsd/ui-gates/` artifacts in discuss phase:
+   ```
+   Read .gsd/ui-gates/STYLE_PICK.md
+   Read .gsd/ui-gates/DESIGN_DNA.md
+   Read .gsd/ui-gates/COMPONENT_PLAN.md
+   Read .gsd/ui-gates/AUDIT.md
+   ```
+4. **Memory injection** via loadMemoryBlock() carries insights from capture_thought()
+
+## Guard Layer
+
+Use `ui-ux-uat-gates` skill as verification guard:
+- Run validator: `python3 ~/.agents/skills/ui-ux-uat-gates/scripts/validate-ui-gate-pack.py .gsd/ui-gates/`
+- Check UI_VERIFY.json has fresh browser evidence
+- Block completion if validator fails
+
+</essential_principles>
+
+<routing>
+
+## Decision Tree
+
+**No design system exists:**
+→ Run full pipeline: generate → audit → fix → verify
+
+**Design system exists, no audit:**
+→ Run: audit → fix → verify
+
+**Audit exists, need fixes:**
+→ Run: fix-only workflow
+
+**Quick check (no changes):**
+→ Run: quick-scan workflow
+
+**Unclear intent:**
+→ Ask: "Do you want to (A) generate design system, (B) audit for drift, (C) fix known issues, or (D) quick scan?"
+
+## Workflow Selection
+
+| User says | Workflow | Mode |
+|---|---|---|
+| "Generate design system" | full-pipeline | simple/medium/hard |
+| "Audit UI consistency" | full-pipeline | auto-detect |
+| "Fix UI drift" | fix-only | from existing AUDIT.md |
+| "Quick scan" | quick-scan | audit only |
+| "Check design system" | quick-scan | verify existing |
+
+</routing>
+
+<workflows_index>
+
+| Workflow | Purpose | File |
+|---|---|---|
+| full-pipeline | Complete: generate → audit → fix → verify | workflows/full-pipeline.md |
+| fix-only | Apply fixes from existing AUDIT.md | workflows/fix-only.md |
+| quick-scan | Scan + audit only, no code changes | workflows/quick-scan.md |
+
+</workflows_index>
+
+<reference_index>
+
+| Reference | Purpose | File |
+|---|---|---|
+| complexity-detection | Auto-detect simple/medium/hard mode | references/complexity-detection.md |
+| design-system-format | STYLE_PICK/DESIGN_DNA/COMPONENT_PLAN format | references/design-system-format.md |
+| legacy-classification | modern/legacy/drift classification rules | references/legacy-classification.md |
+| wave-planning | Token → component → layout wave order | references/wave-planning.md |
+| token-inheritance | Base token merging from PREFERENCES.md | references/token-inheritance.md |
+
+</reference_index>
+
+<quick_start>
+
+**First run (no design system):**
+```bash
+# 1. Full pipeline
+# Load workflows/full-pipeline.md
+
+# 2. Verify with guard layer
+python3 ~/.agents/skills/ui-ux-uat-gates/scripts/validate-ui-gate-pack.py .gsd/ui-gates/
+```
+
+**Subsequent runs (design system exists):**
+```bash
+# Audit + fix
+# Load workflows/full-pipeline.md (skips generate if artifacts exist)
+
+# Or quick scan only
+# Load workflows/quick-scan.md
+```
+
+**Artifacts location (unified):**
+- Design system: `.gsd/ui-gates/STYLE_PICK.md`, `.gsd/ui-gates/DESIGN_DNA.md`, `.gsd/ui-gates/COMPONENT_PLAN.md`
+- Audit: `.gsd/ui-gates/AUDIT.md`, `.gsd/ui-gates/PRIORITY.md`
+- Verification: `.gsd/ui-gates/UI_VERIFY.json`
+- Inventory: `.gsd/ui-gates/inventory.json`
+- Runtime: `.gsd/workflows/ui-consistency/YYYY-MM-DD/` (RESEARCH.md, PROGRESS.md, BEFORE_AFTER.md)
+
+**Command reference:**
+| Flag | Effect |
+|---|---|
+| `--audit-only` | Force hard mode (audit only, no code changes) |
+| `--fix` | Force simple mode (fix all, ignore complexity) |
+| `--fix-tokens` | Force medium mode (fix tokens only) |
+| `--scope=<path>` | Restrict to specific files/directory |
+
+</quick_start>
+
+<auto_mode_integration>
+
+## How Auto-Mode Reads UI Consistency Context
+
+Auto-mode does NOT automatically scan `.gsd/ui-gates/`. The LLM must explicitly read artifacts during discuss phase.
+
+### Required Actions in Discuss Phase
+
+1. **Check if design system exists:**
+   ```bash
+   ls .gsd/ui-gates/STYLE_PICK.md .gsd/ui-gates/DESIGN_DNA.md .gsd/ui-gates/COMPONENT_PLAN.md 2>/dev/null
+   ```
+
+2. **Read design system:**
+   ```
+   Read .gsd/ui-gates/STYLE_PICK.md
+   Read .gsd/ui-gates/DESIGN_DNA.md
+   Read .gsd/ui-gates/COMPONENT_PLAN.md
+   ```
+
+3. **Read audit (if exists):**
+   ```
+   Read .gsd/ui-gates/AUDIT.md
+   Read .gsd/ui-gates/PRIORITY.md
+   ```
+
+4. **Use in milestone planning:**
+   - Apply STYLE_PICK colors/spacing to new components
+   - Follow COMPONENT_PLAN state/sizes for component design
+   - Respect DESIGN_DNA anti-patterns
+   - Prioritize fixes from AUDIT.md in slice planning
+
+### Memory Injection
+
+`loadMemoryBlock()` automatically injects memories from `capture_thought()` into every auto-mode prompt. Capture these during ui-consistency:
+- Token patterns (color scales, spacing scales)
+- Component boundaries (what belongs in design system vs app)
+- Accessibility requirements
+- Performance constraints
+
+</auto_mode_integration>
+
+<guard_skills>
+
+When ui-consistency workflow touches:
+- **Security (auth UI, payment forms)** → add `security-review` as guard
+- **Completion claim** → add `verify-before-complete` as guard
+- **Browser verification** → add `ui-ux-uat-gates` as guard (run validator)
+- **Performance (animation, large lists)** → add `core-web-vitals` as guard
+- **Accessibility** → add `accessibility` as guard
+
+</guard_skills>
+
+<success_criteria>
+
+Design system exists and is referenced:
+- `.gsd/ui-gates/STYLE_PICK.md` contains visual direction
+- `.gsd/ui-gates/DESIGN_DNA.md` contains personality/density/trust specs
+- `.gsd/ui-gates/COMPONENT_PLAN.md` contains component shell/states/verification
+- `.gsd/ui-gates/AUDIT.md` lists findings with severity and effort
+- `.gsd/ui-gates/PRIORITY.md` ranks fixes by impact/effort ratio
+
+Verification completed:
+- `.gsd/ui-gates/UI_VERIFY.json` has fresh browser evidence
+- Validator passes: `python3 ~/.agents/skills/ui-ux-uat-gates/scripts/validate-ui-gate-pack.py .gsd/ui-gates/`
+- No blocker findings
+
+Auto-mode integration:
+- `capture_thought()` called for architectural insights
+- User guided to `/gsd auto` for implementation
+- Artifacts explicitly read in discuss phase
+
+</success_criteria>
+
+<!-- END UI CONSISTENCY UNIFIED APPEND -->

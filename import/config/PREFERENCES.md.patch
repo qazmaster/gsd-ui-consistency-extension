@@ -1,0 +1,38 @@
+
+# BEGIN UI CONSISTENCY CONFIG APPEND
+# Append this to existing ~/.gsd/PREFERENCES.md
+
+uiConsistency:
+  enabled: true
+  artifactDir: .gsd/ui-gates/
+  designSystem:
+    base: ""  # Path to shared design tokens (optional)
+    autoGenerate: true
+  modes:
+    simple:
+      maxFiles: 50
+      fixStrategy: all
+    medium:
+      maxFiles: 200
+      fixStrategy: tokens-only
+    hard:
+      maxFiles: null
+      fixStrategy: audit-only
+  pre_dispatch_hooks:
+    - name: ui-consistency-hint
+      before: [execute-task, plan-slice]
+      action: modify
+      prepend: "Check STYLE_PICK at .gsd/ui-gates/STYLE_PICK.md before modifying UI components."
+  skill_rules:
+    - pattern: "(?i)(ui.consistency|design.system|audit.*ui|fix.*ui|check.*ui)"
+      skill: ui-consistency
+    - pattern: "(?i)(style.pick|design.dna|component.plan)"
+      skill: ui-consistency
+  custom_instructions: |
+    When working on UI components:
+    1. Check .gsd/ui-gates/STYLE_PICK.md for colors, typography, spacing
+    2. Check .gsd/ui-gates/COMPONENT_PLAN.md for component specs
+    3. Follow DESIGN_DNA.md personality and anti-patterns
+    4. Run ui-consistency scan if unsure about patterns
+
+# END UI CONSISTENCY CONFIG APPEND
