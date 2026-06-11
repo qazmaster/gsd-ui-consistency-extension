@@ -91,6 +91,9 @@ routing will activate automatically. The template is kept for backward compatibi
 
 Based on user intent, route to the appropriate workflow:
 
+**Full pipeline (all phases):**
+→ workflows/full-pipeline.md
+
 **Generate design system from scratch:**
 → workflows/generate-design-system.md
 
@@ -109,7 +112,7 @@ Based on user intent, route to the appropriate workflow:
 → If present: route to audit-and-fix
 
 **Unclear intent:**
-→ Ask: "Do you want to (A) generate a design system, (B) audit for drift, or (C) fix known issues?"
+→ Ask: "Do you want to (A) run full pipeline, (B) generate a design system, (C) audit for drift, or (D) fix known issues?"
 
 </routing>
 
@@ -127,8 +130,9 @@ Based on user intent, route to the appropriate workflow:
 
 | Workflow | Purpose |
 |----------|---------|
+| full-pipeline.md | Complete workflow: research → generate → scan → audit → fix → verify |
 | generate-design-system.md | Create STYLE_PICK + DESIGN_DNA + COMPONENT_PLAN from codebase |
-| audit-and-fix.md | Full pipeline: scan → audit → fix → verify |
+| audit-and-fix.md | Scan → audit → fix → verify |
 | quick-scan.md | Scan + audit only, no code changes |
 | fix-only.md | Apply fixes from existing AUDIT.md |
 
